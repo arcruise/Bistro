@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#00a86b">
+    <title>Arcruise</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <style>
+        :root {
+            --bg: #f0f2f5; --card: #ffffff; --primary: #00a86b; --primary2: #00d27a;
+            --text: #1a1a1a; --muted: #666; --border: #e0e0e0; --red: #d32f2f;
+            --orange: #ff9800; --blue: #1565c0; --green2: #e6fff3; --shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+        body{background:var(--bg);color:var(--text)}
+      .app{max-width:430px;margin:0 auto;background:var(--bg);min-height:100vh;padding-bottom:90px}
+
+      .auth{position:fixed;inset:0;background:linear-gradient(135deg,var(--primary) 0%,var(--primary2) 100%);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+      .auth.hidden{display:none}
+      .logo{width:90px;height:90px;background:#fff;border-radius:24px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;font-size:48px;font-weight:900;color:var(--primary);box-shadow:0 8px 24px rgba(0,0,0,0.15)}
+      .auth h1{color:#fff;font-size:32px;font-weight:800;margin-bottom:30px;letter-spacing:1px}
+      .auth input{width:100%;max-width:320px;padding:16px;border:none;border-radius:14px;background:rgba(255,255,255,0.2);color:#fff;font-size:16px;margin-bottom:12px;outline:none}
+      .auth input::placeholder{color:rgba(255,255,255,0.8)}
+      .auth button{width:100%;max-width:320px;padding:16px;border:none;border-radius:14px;background:#fff;color:var(--primary);font-size:16px;font-weight:700;cursor:pointer}
+
+      .header{background:linear-gradient(135deg,var(--primary) 0%,var(--primary2) 100%);padding:20px 16px;color:#fff;position:sticky;top:0;z-index:10}
+      .balance{background:linear-gradient(135deg,var(--primary) 0%,var(--primary2) 100%);border-radius:20px;padding:24px;margin:-10px 16px 20px;color:#fff;box-shadow:var(--shadow)}
+      .balance h2{font-size:14px;font-weight:500;opacity:0.9}
+      .balance h1{font-size:38px;font-weight:800;margin:8px 0}
+      .actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:18px}
+      .actions button{background:rgba(255,255,255,0.25);border:none;border-radius:14px;padding:14px 8px;color:#fff;font-weight:600;font-size:13px;cursor:pointer}
+
+      .box{background:var(--card);border-radius:18px;padding:20px;margin:0 16px 20px;border:1px solid var(--border);box-shadow:var(--shadow)}
+      .progress{background:var(--bg);border-radius:10px;height:10px;margin:12px 0;overflow:hidden}
+      .progress div{background:linear-gradient(90deg,var(--primary),var(--primary2));height:100%;border-radius:10px;width:0%;transition:0.5s}
+      .link{background:var(--green2);border:2px dashed var(--primary);padding:14px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+      .link span{font-size:12px;word-break:break-all}
+      .link button{background:var(--primary);color:#fff;border:none;padding:8px 18px;border-radius:10px;font-weight:600;cursor:pointer}
+
+      .task{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border)}
+      .task-left{display:flex;gap:12px;align-items:center}
+      .icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+      .g{background:var(--green2)}.p{background:#f3e5f5}.o{background:#fff3e0}
+      .task button{background:var(--primary);color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:700;cursor:pointer}
+      .task button:disabled{background:var(--muted);cursor:not-allowed}
+
+      .ad{background:var(--card);border-radius:16px;padding:20px;margin:0 16px 20px;text-align:center;border:1px dashed var(--border);color:var(--muted)}
+
+      .user-card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid var(--border)}
+      .user-card button{background:var(--primary);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;margin-right:8px;cursor:pointer}
+      .badge{padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;background:var(--blue);color:#fff}
+
+      .tx-list{padding:0 16px;display:flex;flex-direction:column;gap:10px}
+      .tx-item{background:var(--card);border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border)}
+      .pos{color:var(--primary);font-weight:700}.neg{color:var(--red);font-weight:700}
+
+      .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--card);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);padding:10px 0 20px;z-index:100}
+      .nav div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--muted);cursor:pointer}
+      .nav.active{color:var(--primary);font-weight:700}
+
+      .modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:.3s}
+      .modal.active{opacity:1;pointer-events:all}
+      .sheet{background:#fff;border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:430px;max-height:85vh;overflow-y:auto}
+      .sheet input{width:100%;padding:15px;border:1.5px solid var(--border);border-radius:12px;margin-bottom:12px;font-size:16px}
+      .sheet button{width:100%;padding:16px;border-radius:12px;border:none;font-size:16px;font-weight:700;background:var(--primary);color:#fff;cursor:pointer}
+      .bank{background:var(--green2);border:2px dashed var(--primary);border-radius:14px;padding:18px;margin-bottom:14px;line-height:1.8}
+      .warn{background:#fff3e0;border:1.5px solid var(--orange);border-radius:14px;padding:16px;margin-bottom:14px;color:#e65100}
+      .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--card);border-radius:14px;padding:14px 22px;box-shadow:0 8px 30px rgba(0,0,0,0.2);z-index:300;font-weight:600}
+
+      .hidden{display:none}.tab{display:none}.tab.active{display:block}
+    </style>
+</head>
+<body>
+
+<!-- LOGIN / SIGNUP SCREEN -->
+<div class="auth" id="authScreen">
+    <div class="logo">₦</div>
+    <h1>Arcruise</h1>
+    <form onsubmit="handleLogin(event)">
+        <input type="email" id="loginEmail" placeholder="Email address" required>
+        <input type="password" id="loginPass" placeholder="Password" required>
+        <button type="submit">Login / Sign Up</button>
+    </form>
+</div>
+
+<!-- USER APP -->
+<div class="app hidden" id="userApp">
+    <div class="header"><div style="font-size:18px;font-weight:700">Hi, <span id="userName">User</span> 👋</div></div>
+
+    <div id="tabHome" class="tab active">
+        <div class="balance">
+            <h2>Available Balance</h2>
+            <h1>₦<span id="totalBalance">0.00</span></h1>
+            <div class="actions">
+                <button onclick="openModal('Fund')">⬇️<br>Fund</button>
+                <button id="withdrawBtn" onclick="openModal('Withdraw')">⬆️<br>Withdraw</button>
+                <button onclick="openModal('Invite')">👥<br>Invite</button>
+            </div>
+        </div>
+
+        <div class="box">
+            <div style="font-weight:700;font-size:16px">Earn ₦100 Per Referral</div>
+            <div style="font-size:13px;color:var(--muted)">Invite 20 people to unlock withdrawal</div>
+            <div class="progress"><div id="progressBar"></div></div>
+            <div style="font-size:13px;margin-bottom:12px"><b id="refCount">0</b>/20 Referrals | Earned: <b>₦<span id="refEarned">0</span></b></div>
+            <div class="link"><span id="referralLink">arcruise.github.io/Bistro?ref=user</span><button onclick="copyReferral()">Copy</button></div>
+        </div>
+
+        <div class="ad"><small>Sponsored Ad</small><div style="margin-top:8px;font-weight:600">320 x 100 Banner</div></div>
+
+        <div style="padding:0 16px">
+            <h3 style="margin-bottom:12px">Earn Daily</h3>
+            <div class="task"><div class="task-left"><div class="icon g">🎁</div><div><b>Daily Bonus</b><br><small style="color:var(--muted)">Claim ₦20 every 24hrs</small></div></div><button id="dailyBtn" onclick="claimDaily()">Claim</button></div>
+            <div class="task"><div class="task-left"><div class="icon p">📺</div><div><b>Watch Ad</b><br><small style="color:var(--muted)">Earn ₦10 - 5 times daily</small></div></div><button id="adBtn" onclick="watchAd()">Watch</button></div>
+            <div class="task"><div class="task-left"><div class="icon o">🎡</div><div><b>Spin Wheel</b><br><small style="color:var(--muted)">Win ₦5 - ₦100 daily</small></div></div><button id="spinBtn" onclick="spinWheel()">Spin</button></div>
+        </div>
+    </div>
+
+    <div id="tabHistory" class="tab"><div style="padding:16px"><h3>Transaction History</h3></div><div id="transactionList" class="tx-list"></div></div>
+
+    <div class="nav">
+        <div class="active" onclick="switchTab('tabHome',this)"><span>🏠</span><span>Home</span></div>
+        <div onclick="switchTab('tabHistory',this)"><span>📜</span><span>History</span></div>
+        <div onclick="openModal('Support')"><span>💬</span><span>Support</span></div>
+        <div onclick="openModal('Profile')"><span>👤</span><span>Profile</span></div>
+        <div onclick="openModal('Install')"><span>📲</span><span>Install</span></div>
+    </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="app hidden" id="adminApp">
+    <div class="header" style="background:var(--blue);display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:18px;font-weight:700">Admin Panel</div>
+        <button onclick="logout()" style="background:#fff;color:var(--blue);border:none;padding:8px 14px;border-radius:10px;font-weight:600">Logout</button>
+    </div>
+    <div style="padding:20px 16px">
+        <h3>Pending Fundings <span id="fundingCount" class="badge">0</span></h3><div id="adminFundingList" style="margin:12px 0"></div>
+        <h3 style="margin-top:20px">Pending Withdrawals</h3><div id="adminWithdrawList" style="margin:12px 0"></div>
+        <h3 style="margin-top:20px">All Users</h3><div id="adminUserList" style="margin:12px 0"></div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modalOverlay" onclick="closeModal()"><div class="sheet" onclick="event.stopPropagation()">
+    <h3 id="modalTitle"></h3><div id="modalContent" style="margin:18px 0"></div>
+</div></div>
+<div id="toastContainer"></div>
+
+<script>
+// ===== CONFIG =====
+const WHATSAPP = "2349060086120"; // CHANGE TO YOUR NUMBER
+const WITHDRAWAL_LIMIT = 20;
+const STORAGE_KEY = "arcruise_bistro_v1";
+
+// ===== DATA =====
+let balance = 0, refCount = 0, refEarned = 0, currentUser = "";
+let users = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+function saveData(){localStorage.setItem(STORAGE_KEY, JSON.stringify(users))}
+
+// ===== LOGIN =====
+function handleLogin(e){
+    e.preventDefault();
+    let email = document.getElementById('loginEmail').value.trim();
+    let pass = document.getElementById('loginPass').value.trim();
+
+    // ADMIN LOGIN
+    if(email === "admin@arcruise.com" && pass === "1234"){
+        document.getElementById('authScreen').classList.add('hidden');
+        document.getElementById('adminApp').classList.remove('hidden');
+        loadAdminPanel(); return;
+    }
+
+    // USER LOGIN / SIGNUP
+    currentUser = email;
+    let user = users.find(u => u.email === email);
+    if(!user){
+        user = {email, balance:0, refCount:0, refEarned:0, transactions:[], withdrawals:[], fundings:[], lastDaily:0, adCount:0, adDate:"", lastSpin:0};
+        users.push(user);
+    }
+    balance = user.balance; refCount = user.refCount; refEarned = user.refEarned;
+
+    document.getElementById('userName').innerText = email.split('@')[0];
+    document.getElementById('referralLink').innerText = `arcruise.github.io/Bistro?ref=${email.split('@')[0]}`;
+    document.getElementById('authScreen').classList.add('hidden');
+    document.getElementById('userApp').classList.remove('hidden');
+
+    updateUI(); loadTransactions(); checkTaskButtons();
+}
+
+// ===== USER FUNCTIONS =====
+function updateUI(){
+    let percent = (refCount / WITHDRAWAL_LIMIT) * 100;
+    document.getElementById('progressBar').style.width = percent + '%';
+    document.getElementById('refCount').innerText = refCount;
+    document.getElementById('refEarned').innerText = refEarned;
+    document.getElementById('totalBalance').innerText = balance.toFixed(2);
+    document.getElementById('withdrawBtn').style.opacity = refCount >= WITHDRAWAL_LIMIT? '1' : '0.5';
+}
+
+function checkTaskButtons(){
+    let u = users.find(x=>x.email===currentUser);
+    let now = Date.now();
+
+    // Daily
+    let dailyBtn = document.getElementById('dailyBtn');
+    if(now - u.lastDaily < 86400000){
+        let hours = Math.ceil((86400000 - (now - u.lastDaily))/3600000);
+        dailyBtn.innerText = hours + "h"; dailyBtn.disabled = true;
+    } else { dailyBtn.innerText = "Claim"; dailyBtn.disabled = false; }
+
+    // Ad
+    if(u.adDate!== new Date().toDateString()){ u.adCount = 0; u.adDate = new Date().toDateString(); }
+    let adBtn = document.getElementById('adBtn');
+    adBtn.innerText = u.adCount >= 5? "0/5" : (5-u.adCount)+"/5";
+    adBtn.disabled = u.adCount >= 5;
+
+    // Spin
+    let spinBtn = document.getElementById('spinBtn');
+    if(now - u.lastSpin < 86400000){
+        let hours = Math.ceil((86400000 - (now - u.lastSpin))/3600000);
+        spinBtn.innerText = hours + "h"; spinBtn.disabled = true;
+    } else { spinBtn.innerText = "Spin"; spinBtn.disabled = false; }
+}
+
+function claimDaily(){
+    let u = users.find(x=>x.email===currentUser);
+    u.lastDaily = Date.now(); balance += 20; u.balance = balance;
+    addTransaction("Daily Bonus", 20, 'pos'); saveData(); updateUI(); checkTaskButtons(); showToast("₦20 Claimed!");
+}
+function watchAd(){
+    let u = users.find(x=>x.email===currentUser);
+    if(u.adCount >= 5) return;
+    u.adCount++; balance += 10; u.balance = balance;
+    addTransaction("Watch Ad", 10, 'pos'); saveData(); updateUI(); checkTaskButtons(); showToast("₦10 Earned!");
+}
+function spinWheel(){
+    let u = users.find(x=>x.email===currentUser);
+    u.lastSpin = Date.now(); let win = [5,10,20,50,100][Math.floor(Math.random()*5)];
+    balance += win; u.balance = balance;
+    addTransaction("Spin Wheel", win, 'pos'); saveData(); updateUI(); checkTaskButtons(); showToast(`You won ₦${win}!`);
+}
+
+// ===== ADMIN PANEL =====
+function loadAdminPanel(){
+    let fundingHtml = ""; let count = 0;
+    users.forEach(u => {
+        u.fundings.forEach(f => {
+            if(f.status === 'pending'){ count++;
+                fundingHtml += `<div class="user-card"><b>${u.email}</b><br><small>₦${f.amount} | Proof: ${f.proof} | ${f.time}</small><br>
+                <button onclick="approveFunding('${u.email}',${f.amount},${f.id})">Approve</button>
+                <button onclick="rejectFunding('${u.email}',${f.id})" style="background:var(--red)">Reject</button></div>`;
+            }
+        });
+    });
+    document.getElementById('adminFundingList').innerHTML = fundingHtml || "<div style='color:var(--muted)'>No pending fundings</div>";
+    document.getElementById('fundingCount').innerText = count;
+
+    let withdrawHtml = "";
+    users.forEach(u => { u.withdrawals.forEach(w => {
+        withdrawHtml += `<div class="user-card"><b>${u.email}</b><br><small>₦${w.amount} to ${w.bank}</small><br>
+        <button onclick="markPaid('${u.email}',${w.amount})" style="background:var(--blue)">Mark Paid</button></div>`;
+    })});
+    document.getElementById('adminWithdrawList').innerHTML = withdrawHtml || "<div style='color:var(--muted)'>No pending withdrawals</div>";
+
+    let userHtml = "";
+    users.forEach(u => { userHtml += `<div class="user-card"><b>${u.email}</b><br>₦${u.balance} | ${u.refCount}/20 Referrals</div>` });
+    document.getElementById('adminUserList').innerHTML = userHtml || "No users";
+}
+
+function approveFunding(email, amount, id){
+    let u = users.find(x=>x.email===email);
+    u.balance += parseInt(amount);
+    u.fundings.find(x=>x.id===id).status = 'approved';
+    u.transactions.unshift({title:"Wallet Funding", amt:amount, type:'pos', date:new Date().toLocaleString()});
+    saveData(); loadAdminPanel(); showToast(`₦${amount} funded to ${email}`);
+}
+function rejectFunding(email, id){
+    users.find(x=>x.email===email).fundings.find(x=>x.id===id).status = 'rejected';
+    saveData(); loadAdminPanel(); showToast("Funding rejected");
+}
+function markPaid(email, amount){
+    let u = users.find(x=>x.email===email);
+    u.withdrawals = u.withdrawals.filter(x=>x.amount!=amount);
+    saveData(); loadAdminPanel(); showToast("Marked as paid");
+}
+
+// ===== MODALS & UTILS =====
+function switchTab(tabId, el){
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nav div').forEach(n => n.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active'); el.classList.add('active');
+}
+
+function openModal(title){
+    let content = "";
+    if(title === "Fund"){
+        content = `<div class="bank"><b>🏦 Pay to OPay Account:</b><br><br><b>Bank:</b> OPay Digital Services<br><b>Account No:</b> 9060086120<br><b>Account Name:</b> HENSHAW DESTINY OKON</div>
+        <input type="number" id="fundAmount" placeholder="Amount you transferred">
+        <input type="text" id="fundProof" placeholder="Transaction ID / Proof">
+        <button onclick="submitFunding()">Submit for Approval</button>`;
+    }
+    if(title === "Withdraw"){
+        content = refCount < WITHDRAWAL_LIMIT? `<div class="warn">Invite ${WITHDRAWAL_LIMIT-refCount} more people to unlock withdrawal</div>` :
+        `<input type="number" id="wdAmount" placeholder="Amount to withdraw">
+        <input type="text" id="wdBank" placeholder="Bank Name & Account Number">
+        <button onclick="submitWithdrawal()">Request Withdrawal</button>`;
+    }
+    if(title === "Invite"){
+        content = `<p style="margin-bottom:12px">Share your link and earn ₦100 for each person that signs up</p>
+        <div class="link"><span>${document.getElementById('referralLink').innerText}</span><button onclick="copyReferral()">Copy</button></div>`;
+    }
+    if(title === "Support") content = `<p>Contact admin on WhatsApp: ${WHATSAPP}</p>`;
+    if(title === "Profile") content = `<p><b>Email:</b> ${currentUser}</p><p><b>Balance:</b> ₦${balance.toFixed(2)}</p>`;
+    if(title === "Install") content = `<p>Add to Home Screen for app experience</p>`;
+
+    document.getElementById('modalTitle').innerText = title;
+    document.getElementById('modalContent').innerHTML = content;
+    document.getElementById('modalOverlay').classList.add('active');
+}
+
+function submitFunding(){
+    let amt = document.getElementById('fundAmount').value;
+    let proof = document.getElementById('fundProof').value;
+    if(!amt ||!proof) return showToast('Fill all fields');
+    let u = users.find(x=>x.email===currentUser);
+    let id = Date.now();
+    u.fundings.push({id, amount:amt, proof, status:'pending', time:new Date().toLocaleString()});
+    addTransaction("Funding Request", amt, 'pos'); saveData();
+    window.open(`https://wa.me/${WHATSAPP}?text=🚨NEW FUNDING REQUEST🚨%0AUser:${currentUser}%0AAmount:₦${amt}%0AProof:${proof}`,'_blank');
+    showToast("Request sent. Wait for approval"); closeModal();
+}
+function submitWithdrawal(){
+    let amt = document.getElementById('wdAmount').value;
+    let bank = document.getElementById('wdBank').value;
+    if(balance < amt) return showToast('Insufficient balance');
+    users.find(x=>x.email===currentUser).withdrawals.push({amount:amt, bank});
+    saveData(); showToast("Withdrawal request submitted"); closeModal();
+}
+
+function copyReferral(){ navigator.clipboard.writeText(document.getElementById('referralLink').innerText); showToast('Copied!'); }
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('active'); }
+function showToast(msg){ let t = document.createElement('div'); t.className = 'toast'; t.innerText = msg; document.getElementById('toastContainer').appendChild(t); setTimeout(()=>t.remove(), 3000); }
+function addTransaction(title, amt, type){ users.find(x=>x.email===currentUser).transactions.unshift({title, amt, type, date:new Date().toLocaleString()}); saveData(); }
+function loadTransactions(){ let u = users.find(x=>x.email===currentUser); document.getElementById('transactionList').innerHTML = ""; u.transactions.forEach(t=>{ document.getElementById('transactionList').innerHTML += `<div class="tx-item"><div><b>${t.title}</b><br><small style="color:var(--muted)">${t.date}</small></div><div class="${t.type}">${t.type==='pos'?'+':'-'}₦${t.amt}</div></div>` }); }
+function logout(){ location.reload(); }
+</script>
+</body>
+</html>
