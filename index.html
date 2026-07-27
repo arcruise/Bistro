@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bistro Ads</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+  body{background:#f5f7fa;padding-bottom:70px}
+ .header{background:linear-gradient(135deg,#4a90e2,#357ABD);color:#fff;padding:15px;text-align:center}
+ .card{background:#fff;margin:15px;border-radius:10px;padding:15px;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+  input{width:100%;padding:12px;margin:8px 0;border:1px solid #ddd;border-radius:5px}
+  button{width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:5px;font-size:16px;cursor:pointer}
+  button:disabled{background:#aaa}
+ .nav{display:flex;justify-content:space-around;position:fixed;bottom:0;width:100%;background:#fff;border-top:1px solid #ddd}
+ .nav button{background:none;color:#333;font-size:12px}
+ .hidden{display:none}
+ .balance{font-size:28px;font-weight:bold;color:#2563eb}
+ .toast{position:fixed;top:50px;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:10px 20px;border-radius:20px;display:none;z-index:999}
+ .adbox{margin:10px auto;text-align:center}
+</style>
+</head>
+<body>
+
+<div id="loginPage">
+  <div class="header"><h2>Hello! Welcome</h2><p>Login</p></div>
+  <div class="card">
+    <input type="tel" id="phone" placeholder="Phone">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
+</div>
+
+<div id="homePage" class="hidden">
+  <div class="header">
+    <p>Account: <span id="accPhone"></span> | ID: <span id="accID"></span></p>
+    <h2>Account Balance</h2>
+    <p class="balance">₦<span id="balance">0.00</span></p>
+    <button onclick="toast('Recharge')" style="width:48%;display:inline-block;background:#fbbf24;color:#000">Recharge</button>
+    <button onclick="toast('Withdrawal')" style="width:48%;display:inline-block;background:#fff;color:#2563eb">Withdrawal</button>
+  </div>
+
+  <div class="card">
+    <h3>Today's Income</h3>
+    <div style="display:flex;justify-content:space-between">
+      <div><p style="color:#f59e0b">₦<span id="today">0.00</span></p><p>Today</p></div>
+      <div><p>₦<span id="total">0.00</span></p><p>Total</p></div>
+      <div><p><span id="adsCount">0</span>/20</p><p>Ads</p></div>
+    </div>
+    <button id="startBtn" onclick="watchAds()" style="margin-top:15px">▶️ Start Watching Ads</button>
+
+    <div class="adbox">
+      <p style="font-size:12px">Sponsored Ad</p>
+      <div id="adsterra-banner"></div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button onclick="showPage('homePage')">🏠<br>Home</button>
+    <button onclick="toast('History')">📜<br>History</button>
+    <button onclick="watchAds()">▶️<br>Start</button>
+    <button onclick="toast('Earnings')">💵<br>Earnings</button>
+    <button onclick="showPage('myPage')">👤<br>My</button>
+  </div>
+</div>
+
+<div id="myPage" class="hidden">
+  <div class="card"><h3>My Account</h3><p>Phone: <span id="myPhone"></span></p><button onclick="logout()">Exit</button></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- POPUNDER + SOCIAL BAR SCRIPT - YOUR KEY -->
+<script src="https://pl30556019.effectivecpmnetwork.com/68/be/e5/68bee5d75277abf76b2436a45a10f4b0.js"></script>
+
+<script>
+// BANNER KEY
+atOptions = {
+  'key' : '1f08102e926261fb48fb8872e3b4ba05',
+  'format' : 'iframe',
+  'height' : 250,
+  'width' : 300,
+  'params' : {}
+};
+document.getElementById('adsterra-banner').innerHTML = '<script src="https://www.highperformanceformat.com/1f08102e926261fb48fb8872e3b4ba05/invoke.js"><\/script>';
+
+const EARN_PER_AD = 4; // User gets ₦4. You keep 20% = ₦1 + Adsterra money
+let user = JSON.parse(localStorage.getItem('bistroUser')) || null;
+let data = JSON.parse(localStorage.getItem('bistroData')) || {balance:0, today:0, total:0, adsWatched:0, lastDate:''};
+
+// Reset daily
+let today = new Date().toISOString().split('T')[0];
+if(data.lastDate!== today){ data.adsWatched=0; data.today=0; data.lastDate=today; save(); }
+
+function save(){ localStorage.setItem('bistroData', JSON.stringify(data)); }
+function toast(msg){ let t=document.getElementById('toast'); t.innerText=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
+
+function login(){
+  let phone=document.getElementById('phone').value;
+  let pass=document.getElementById('password').value;
+  if(phone&&pass){ user={phone,id:Math.floor(Math.random()*9000)+1000}; localStorage.setItem('bistroUser',JSON.stringify(user)); showHome(); }
+  else toast('Fill all fields');
+}
+
+function showHome(){
+  document.getElementById('loginPage').classList.add('hidden');
+  document.getElementById('homePage').classList.remove('hidden');
+  document.getElementById('accPhone').innerText=user.phone;
+  document.getElementById('accID').innerText=user.id;
+  document.getElementById('myPhone').innerText=user.phone;
+  document.getElementById('balance').innerText=data.balance.toFixed(2);
+  document.getElementById('today').innerText=data.today.toFixed(2);
+  document.getElementById('total').innerText=data.total.toFixed(2);
+  document.getElementById('adsCount').innerText=data.adsWatched;
+  if(data.adsWatched>=20) document.getElementById('startBtn').disabled=true;
+}
+
+function watchAds(){
+  if(data.adsWatched>=20){ toast('20 ads done for today'); return; }
+
+  // 1. TRIGGER POPUNDER - This is where you make real money
+  // The script above will auto trigger on click
+
+  // 2. RELOAD BANNER TOO
+  let adDiv = document.getElementById('adsterra-banner');
+  adDiv.innerHTML = '';
+  setTimeout(()=>{ adDiv.innerHTML = '<script src="https://www.highperformanceformat.com/1f08102e926261fb48fb8872e3b4ba05/invoke.js"><\/script>'; },100);
+
+  toast('Ad loading... Wait 10s');
+  document.getElementById('startBtn').disabled=true;
+
+  setTimeout(()=>{
+    data.adsWatched++;
+    data.today += EARN_PER_AD;
+    data.total += EARN_PER_AD;
+    data.balance += EARN_PER_AD;
+    save();
+    showHome();
+    toast('₦' + EARN_PER_AD + '.00 Credited! + You earned from popunder');
+    document.getElementById('startBtn').disabled=false;
+  },10000)
+}
+
+function logout(){ localStorage.clear(); location.reload(); }
+function showPage(id){ document.querySelectorAll('#homePage,#myPage').forEach(p=>p.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+
+if(user) showHome();
+</script>
+</body>
+</html>
