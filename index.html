@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdStream · watch & earn</title>
+  <!-- Font Awesome 6 (free) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: #f6f8fc;
+      color: #0b0e14;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.2rem;
+    }
+
+    .app-wrapper {
+      max-width: 480px;
+      width: 100%;
+      background: white;
+      border-radius: 48px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.06), 0 10px 30px rgba(0, 0, 0, 0.02);
+      padding: 1.8rem 1.5rem 1.2rem;
+      transition: all 0.2s;
+      border: 1px solid #edeff2;
+    }
+
+    /* header */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.8rem;
+    }
+
+    .app-header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(145deg, #0b0c0e, #2d323b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .app-header h1 i {
+      -webkit-text-fill-color: #2563eb;
+      margin-right: 6px;
+    }
+
+    .user-badge {
+      background: #eef2f9;
+      padding: 0.4rem 1rem 0.4rem 0.8rem;
+      border-radius: 40px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: #1f2a3f;
+    }
+
+    .user-badge i {
+      color: #2563eb;
+      font-size: 1rem;
+    }
+
+    /* login / register card */
+    .auth-card {
+      background: #fafcff;
+      border-radius: 32px;
+      padding: 1.8rem 1.5rem;
+      border: 1px solid #e5eaf0;
+      margin-bottom: 1.8rem;
+    }
+
+    .auth-card h3 {
+      margin-bottom: 1.2rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .auth-input {
+      width: 100%;
+      padding: 0.9rem 1.2rem;
+      border: 1.5px solid #dce1e9;
+      border-radius: 60px;
+      background: white;
+      font-size: 1rem;
+      margin-bottom: 0.8rem;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .auth-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+    }
+
+    .auth-btn {
+      background: #0b0e14;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.8rem;
+      border-radius: 60px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      width: 100%;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .auth-btn:hover {
+      background: #262b33;
+    }
+
+    .auth-switch {
+      margin-top: 0.7rem;
+      font-size: 0.9rem;
+      color: #4b5563;
+      text-align: center;
+    }
+
+    .auth-switch span {
+      color: #2563eb;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* dashboard (hidden by default) */
+    .dashboard {
+      display: none;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      margin: 1.2rem 0 1.8rem;
+    }
+
+    .stat-card {
+      background: #f8faff;
+      border-radius: 24px;
+      padding: 1rem 0.8rem;
+      text-align: center;
+      border: 1px solid #e9edf4;
+    }
+
+    .stat-card i {
+      font-size: 1.8rem;
+      color: #2563eb;
+      background: #e4edfe;
+      padding: 0.5rem;
+      border-radius: 60px;
+      margin-bottom: 6px;
+    }
+
+    .stat-card .value {
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: -0.01em;
+    }
+
+    .stat-card .label {
+      font-size: 0.75rem;
+      color: #5e6778;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .ad-player {
+      background: #f2f6fe;
+      border-radius: 32px;
+      padding: 1.6rem 1.2rem;
+      text-align: center;
+      border: 1px dashed #b9c8e0;
+      margin-bottom: 1.8rem;
+    }
+
+    .ad-player .ad-icon {
+      font-size: 2.8rem;
+      color: #1e2b47;
+      opacity: 0.6;
+    }
+
+    .ad-player .timer {
+      font-weight: 700;
+      font-size: 2.2rem;
+      margin: 0.2rem 0;
+      letter-spacing: 1px;
+    }
+
+    .ad-player .ad-label {
+      font-weight: 500;
+      color: #29344a;
+    }
+
+    .watch-btn {
+      background: #0b0e14;
+      color: white;
+      border: none;
+      padding: 0.9rem 2.2rem;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-top: 0.8rem;
+      cursor: pointer;
+      transition: 0.2s;
+      width: 100%;
+    }
+
+    .watch-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .watch-btn:hover:not(:disabled) {
+      background: #262b33;
+    }
+
+    .progress-text {
+      font-size: 0.9rem;
+      color: #3b465b;
+      margin-top: 0.6rem;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 0.6rem;
+      margin: 1.2rem 0 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      flex: 1;
+      background: white;
+      border: 1.5px solid #dce1e9;
+      padding: 0.7rem 0.2rem;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-width: 90px;
+    }
+
+    .action-btn i {
+      color: #2563eb;
+    }
+
+    .action-btn:hover {
+      border-color: #2563eb;
+      background: #f2f7ff;
+    }
+
+    .action-btn.withdraw {
+      background: #0b0e14;
+      border-color: #0b0e14;
+      color: white;
+    }
+
+    .action-btn.withdraw i {
+      color: white;
+    }
+
+    .action-btn.withdraw:hover {
+      background: #2c323d;
+    }
+
+    .info-box {
+      background: #f2f5fa;
+      border-radius: 20px;
+      padding: 1rem 1.2rem;
+      font-size: 0.9rem;
+      border-left: 4px solid #2563eb;
+      margin: 1.2rem 0 0.6rem;
+      color: #1f2937;
+    }
+
+    .info-box i {
+      margin-right: 10px;
+      color: #2563eb;
+    }
+
+    .footnote {
+      font-size: 0.75rem;
+      color: #6b7a8f;
+      margin-top: 1.2rem;
+      text-align: center;
+      border-top: 1px solid #e4e9f0;
+      padding-top: 1rem;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .flex {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .text-danger {
+      color: #b91c1c;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-wrapper" id="app">
+
+  <!-- header -->
+  <div class="app-header">
+    <h1><i class="fas fa-play-circle"></i> AdStream</h1>
+    <div class="user-badge" id="userBadge">
+      <i class="fas fa-user-circle"></i> <span id="usernameDisplay">Guest</span>
+    </div>
+  </div>
+
+  <!-- AUTH CARD (login/register) -->
+  <div id="authCard" class="auth-card">
+    <h3><i class="fas fa-sign-in-alt" style="color:#2563eb;"></i> Access your account</h3>
+    <input type="text" id="authUsername" class="auth-input" placeholder="Username" value="demo">
+    <input type="password" id="authPassword" class="auth-input" placeholder="Password" value="123456">
+    <button id="loginBtn" class="auth-btn"><i class="fas fa-arrow-right-to-bracket"></i> Login / Register</button>
+    <div class="auth-switch">
+      <span id="authToggleMsg">Don't have an account? <span id="authToggleLink">Register</span></span>
+    </div>
+    <div id="authError" style="color:#b91c1c; font-size:0.9rem; margin-top:0.5rem; text-align:center;"></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="dashboard">
+    <!-- stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <i class="fas fa-eye"></i>
+        <div class="value" id="watchedCount">0</div>
+        <div class="label">Ads watched</div>
+      </div>
+      <div class="stat-card">
+        <i class="fas fa-coins"></i>
+        <div class="value" id="balanceDisplay">$0.00</div>
+        <div class="label">Your balance (20%)</div>
+      </div>
+    </div>
+
+    <!-- ad player -->
+    <div class="ad-player">
+      <div class="ad-icon"><i class="fas fa-film"></i></div>
+      <div class="ad-label">Watch an ad to earn</div>
+      <div class="timer" id="adTimer">00</div>
+      <div class="progress-text" id="adProgress">0 / 20 today</div>
+      <button class="watch-btn" id="watchAdBtn"><i class="fas fa-play"></i> Watch ad</button>
+    </div>
+
+    <!-- action row -->
+    <div class="action-row">
+      <button class="action-btn" id="homeBtn"><i class="fas fa-home"></i> Home</button>
+      <button class="action-btn" id="inviteBtn"><i class="fas fa-user-plus"></i> Invite</button>
+      <button class="action-btn withdraw" id="withdrawBtn"><i class="fas fa-hand-holding-usd"></i> Withdraw</button>
+    </div>
+
+    <!-- invite / withdraw info -->
+    <div id="infoPanel" class="info-box">
+      <i class="fas fa-users"></i> <span id="infoText">Invite 20 people to unlock withdrawals.</span>
+    </div>
+    <div id="inviteCountDisplay" style="text-align:center; font-size:0.95rem; color:#2d3748; margin: 4px 0 8px;">
+      <i class="fas fa-user-friends"></i> Invited: <span id="inviteCount">0</span> / 20
+    </div>
+
+    <div class="footnote">
+      <i class="fas fa-shield-alt"></i> 80% to platform · 20% to you · Auto-payout
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    // ---------- ADSTERRA (simulated) ----------
+    // official Adsterra code (we include it but it's loaded in background)
+    (function() {
+      const script = document.createElement('script');
+      script.src = 'https://pl30556019.effectivecpmnetwork.com/68/be/e5/68bee5d75277abf76b2436a45a10f4b0.js';
+      script.async = true;
+      document.head.appendChild(script);
+    })();
+
+    // ---------- STATE ----------
+    const STORAGE_KEY = 'adstream_user_data';
+
+    // default user data
+    function getDefaultUser() {
+      return {
+        username: '',
+        password: '',
+        watchedToday: 0,
+        totalWatched: 0,
+        balance: 0,          // in dollars (user's 20%)
+        invitedCount: 0,
+        lastDate: new Date().toDateString(),
+        isLoggedIn: false
+      };
+    }
+
+    let user = getDefaultUser();
+    let currentAdInterval = null;
+    let adTimer = 0;
+    const MAX_ADS_PER_DAY = 20;
+    const AD_REWARD = 0.20;   // 20% of $1 per ad (example: Adsterra pays $1 per ad)
+    const INVITE_THRESHOLD = 20;
+
+    // DOM refs
+    const authCard = document.getElementById('authCard');
+    const dashboard = document.getElementById('dashboard');
+    const usernameDisplay = document.getElementById('usernameDisplay');
+    const authUsername = document.getElementById('authUsername');
+    const authPassword = document.getElementById('authPassword');
+    const loginBtn = document.getElementById('loginBtn');
+    const authToggleLink = document.getElementById('authToggleLink');
+    const authToggleMsg = document.getElementById('authToggleMsg');
+    const authError = document.getElementById('authError');
+
+    const watchedCount = document.getElementById('watchedCount');
+    const balanceDisplay = document.getElementById('balanceDisplay');
+    const adTimerEl = document.getElementById('adTimer');
+    const adProgress = document.getElementById('adProgress');
+    const watchBtn = document.getElementById('watchAdBtn');
+    const infoText = document.getElementById('infoText');
+    const inviteCountSpan = document.getElementById('inviteCount');
+    const homeBtn = document.getElementById('homeBtn');
+    const inviteBtn = document.getElementById('inviteBtn');
+    const withdrawBtn = document.getElementById('withdrawBtn');
+
+    // ---------- helpers ----------
+    function saveUser() {
+      if (user.isLoggedIn && user.username) {
+        const data = { ...user };
+        data.lastDate = new Date().toDateString();
+        localStorage.setItem(STORAGE_KEY + '_' + user.username, JSON.stringify(data));
+      }
+    }
+
+    function loadUser(username) {
+      const raw = localStorage.getItem(STORAGE_KEY + '_' + username);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          // merge with default to keep structure
+          const def = getDefaultUser();
+          for (let key in def) {
+            if (parsed[key] === undefined) parsed[key] = def[key];
+          }
+          return parsed;
+        } catch (e) {
+          return null;
+        }
+      }
+      return null;
+    }
+
+    function resetDailyIfNeeded() {
+      const today = new Date().toDateString();
+      if (user.lastDate !== today) {
+        user.watchedToday = 0;
+        user.lastDate = today;
+        saveUser();
+      }
+    }
+
+    function updateUI() {
+      resetDailyIfNeeded();
+      watchedCount.textContent = user.watchedToday + ' / ' + MAX_ADS_PER_DAY;
+      balanceDisplay.textContent = '$' + user.balance.toFixed(2);
+      adProgress.textContent = user.watchedToday + ' / ' + MAX_ADS_PER_DAY + ' today';
+      inviteCountSpan.textContent = user.invitedCount;
+
+      // Withdraw condition
+      const canWithdraw = user.invitedCount >= INVITE_THRESHOLD && user.balance > 0;
+      if (user.invitedCount >= INVITE_THRESHOLD) {
+        infoText.innerHTML = `<i class="fas fa-check-circle" style="color:#16a34a;"></i> Withdrawals unlocked! Your balance is auto-payable.`;
+        withdrawBtn.disabled = false;
+        withdrawBtn.style.opacity = '1';
+      } else {
+        const needed = INVITE_THRESHOLD - user.invitedCount;
+        infoText.innerHTML = `<i class="fas fa-users"></i> Invite ${needed} more people to unlock withdrawals.`;
+        withdrawBtn.disabled = true;
+        withdrawBtn.style.opacity = '0.5';
+      }
+
+      // watch button
+      if (user.watchedToday >= MAX_ADS_PER_DAY) {
+        watchBtn.disabled = true;
+        watchBtn.textContent = '✅ Daily limit reached';
+      } else {
+        watchBtn.disabled = false;
+        watchBtn.innerHTML = '<i class="fas fa-play"></i> Watch ad';
+      }
+    }
+
+    // ---------- AUTH ----------
+    function loginUser(username, password) {
+      const stored = loadUser(username);
+      if (stored && stored.password === password) {
+        user = stored;
+        user.isLoggedIn = true;
+        authError.textContent = '';
+        showDashboard();
+        return true;
+      } else if (!stored) {
+        // register new
+        const newUser = getDefaultUser();
+        newUser.username = username;
+        newUser.password = password;
+        newUser.isLoggedIn = true;
+        newUser.lastDate = new Date().toDateString();
+        user = newUser;
+        saveUser();
+        authError.textContent = '';
+        showDashboard();
+        return true;
+      } else {
+        authError.textContent = '❌ Wrong password.';
+        return false;
+      }
+    }
+
+    function showDashboard() {
+      authCard.classList.add('hidden');
+      dashboard.style.display = 'block';
+      usernameDisplay.textContent = user.username;
+      updateUI();
+    }
+
+    function logout() {
+      if (user.isLoggedIn) {
+        saveUser();
+      }
+      user = getDefaultUser();
+      dashboard.style.display = 'none';
+      authCard.classList.remove('hidden');
+      authUsername.value = '';
+      authPassword.value = '';
+      authError.textContent = '';
+    }
+
+    // ---------- AD WATCH ----------
+    function startAdWatch() {
+      if (user.watchedToday >= MAX_ADS_PER_DAY) {
+        alert('You reached 20 ads today. Come back tomorrow!');
+        return;
+      }
+      if (currentAdInterval) return; // already watching
+
+      watchBtn.disabled = true;
+      watchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Watching...';
+      adTimer = 15; // 15 seconds countdown
+      adTimerEl.textContent = adTimer;
+
+      currentAdInterval = setInterval(() => {
+        adTimer -= 1;
+        adTimerEl.textContent = adTimer < 10 ? '0' + adTimer : adTimer;
+
+        if (adTimer <= 0) {
+          clearInterval(currentAdInterval);
+          currentAdInterval = null;
+          // reward user
+          user.watchedToday += 1;
+          user.totalWatched += 1;
+          user.balance += AD_REWARD; // 20% of $1
+          saveUser();
+          updateUI();
+          watchBtn.innerHTML = '<i class="fas fa-check"></i> Ad watched!';
+          setTimeout(() => {
+            if (user.watchedToday < MAX_ADS_PER_DAY) {
+              watchBtn.innerHTML = '<i class="fas fa-play"></i> Watch ad';
+              watchBtn.disabled = false;
+            } else {
+              watchBtn.innerHTML = '✅ Daily limit reached';
+              watchBtn.disabled = true;
+            }
+          }, 1200);
+          adTimerEl.textContent = '00';
+        }
+      }, 1000);
+    }
+
+    // ---------- INVITE ----------
+    function simulateInvite() {
+      if (!user.isLoggedIn) return;
+      user.invitedCount = Math.min(user.invitedCount + 1, 30); // max 30 for demo
+      saveUser();
+      updateUI();
+      alert('✅ Invite recorded! (simulated)');
+    }
+
+    // ---------- WITHDRAW (auto) ----------
+    function handleWithdraw() {
+      if (!user.isLoggedIn) return;
+      if (user.invitedCount < INVITE_THRESHOLD) {
+        alert(`🚫 Need ${INVITE_THRESHOLD - user.invitedCount} more invites to withdraw.`);
+        return;
+      }
+      if (user.balance <= 0) {
+        alert('💰 Your balance is $0.00. Watch more ads!');
+        return;
+      }
+      // Auto-payout: transfer to user (simulated)
+      const amount = user.balance;
+      alert(`💸 Auto-withdrawal: $${amount.toFixed(2)} sent to your wallet (simulated).`);
+      user.balance = 0;
+      saveUser();
+      updateUI();
+    }
+
+    // ---------- EVENT BINDING ----------
+    // Auth toggle (login/register)
+    let isLoginMode = true;
+    authToggleLink.addEventListener('click', function() {
+      isLoginMode = !isLoginMode;
+      if (isLoginMode) {
+        authToggleMsg.innerHTML = `Don't have an account? <span id="authToggleLink">Register</span>`;
+        loginBtn.innerHTML = '<i class="fas fa-arrow-right-to-bracket"></i> Login';
+      } else {
+        authToggleMsg.innerHTML = `Already have an account? <span id="authToggleLink">Login</span>`;
+        loginBtn.innerHTML = '<i class="fas fa-user-plus"></i> Register';
+      }
+      // rebind toggle link
+      document.getElementById('authToggleLink').addEventListener('click', authToggleLink.click);
+    });
+
+    loginBtn.addEventListener('click', function() {
+      const username = authUsername.value.trim();
+      const password = authPassword.value.trim();
+      if (!username || !password) {
+        authError.textContent = '⚠️ Please fill in all fields.';
+        return;
+      }
+      loginUser(username, password);
+    });
+
+    // Enter key on inputs
+    authPassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginBtn.click(); });
+    authUsername.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginBtn.click(); });
+
+    // Watch ad
+    watchBtn.addEventListener('click', startAdWatch);
+
+    // Home: reset UI / refresh
+    homeBtn.addEventListener('click', function() {
+      if (user.isLoggedIn) {
+        updateUI();
+        alert('🏠 Dashboard refreshed.');
+      }
+    });
+
+    // Invite
+    inviteBtn.addEventListener('click', simulateInvite);
+
+    // Withdraw
+    withdrawBtn.addEventListener('click', handleWithdraw);
+
+    // auto-login if stored user (demo: check for 'demo')
+    window.addEventListener('load', function() {
+      const demoData = loadUser('demo');
+      if (demoData) {
+        // auto login demo
+        authUsername.value = 'demo';
+        authPassword.value = '123456';
+        loginUser('demo', '123456');
+      } else {
+        // show auth
+        authCard.classList.remove('hidden');
+        dashboard.style.display = 'none';
+      }
+    });
+
+    // expose for debugging
+    window.__user = user;
+  })();
+</script>
+
+</body>
+</html>
