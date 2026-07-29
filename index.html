@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BISTRO</title>
+<style>
+  *{box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif}
+  body{margin:0;background:#FFF9E6;color:#333}
+  .screen{display:none;padding:20px;max-width:420px;margin:auto;min-height:100vh}
+  .active{display:block}
+  h1{color:#FFD700;text-align:center;font-size:32px;letter-spacing:2px;text-shadow:1px 1px #0066CC}
+  h2{color:#0066CC;text-align:center}
+  input, select, button{width:100%;padding:14px;margin:10px 0;border:1px solid #ddd;border-radius:10px;font-size:16px}
+  button{background:#0066CC;color:white;border:none;cursor:pointer;font-weight:bold}
+  button:disabled{background:#aaa}
+  .card{background:white;padding:18px;border-radius:15px;margin:12px 0;box-shadow:0 3px 8px rgba(0,0,0,0.1)}
+  .balance{font-size:28px;font-weight:bold;color:#0066CC}
+  .task-card{display:flex;justify-content:space-between;align-items:center;background:white;padding:12px;border-radius:10px;margin:8px 0}
+  .task-card button{background:#FFD700;color:#333;padding:8px 12px;border-radius:8px}
+  .ad-box{background:#fff;border:2px solid #FFD700;padding:10px;border-radius:10px;margin:10px 0;text-align:center}
+  .small{font-size:12px;color:#666;text-align:center}
+  .nav-btn{background:#FFD700;color:#333}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="screen active">
+  <h1>BISTRO</h1>
+  <div class="card">
+    <input type="tel" id="phone" placeholder="Phone Number">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <button onclick="signup()" class="nav-btn">Signup</button>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home" class="screen">
+  <h1>BISTRO</h1>
+  <div class="card">
+    <p>Hi, <b id="username">User</b></p>
+    <p>Balance: <span class="balance">₦<span id="balance">0</span></span></p>
+    <p>Daily Task: <b id="taskCount">0</b>/20</p>
+  </div>
+  <button onclick="showScreen('tasks')">Start Daily Task</button>
+  <button onclick="copyInvite()" class="nav-btn">Invite Friends</button>
+  <button onclick="showScreen('withdraw')">Withdraw</button>
+</div>
+
+<!-- TASKS - 20 ADS -->
+<div id="tasks" class="screen">
+  <h2>Daily Task: <span id="taskCount2">0</span>/20</h2>
+  <p class="small">Watch ad to complete each task = ₦20</p>
+  <div id="taskList"></div>
+
+  <!-- AD CONTAINER -->
+  <div id="adContainer" class="card" style="display:none;">
+    <p class="small">Watch the ad below for 10 seconds</p>
+    <div class="ad-box">
+      <!-- YOUR ADSTERRA CODE LOADS HERE -->
+      <div id="adsterraSlot"></div>
+    </div>
+    <button onclick="claimReward()" id="claimBtn" disabled>Claim ₦20</button>
+  </div>
+  
+  <button onclick="showScreen('home')" class="nav-btn">Back to Home</button>
+</div>
+
+<!-- WITHDRAW -->
+<div id="withdraw" class="screen">
+  <h2>Withdraw</h2>
+  <div class="card">
+    <p>Your Link: <span id="inviteLink"></span> <button onclick="copyInvite()" style="width:auto;padding:5px 10px">Copy</button></p>
+  </div>
+  <p class="small">Minimum = ₦10,000. Withdrawals: 6am - 6pm WAT</p>
+  <select id="bank">
+    <option>Select Bank</option><option>GTBank</option><option>Access Bank</option><option>Opay</option>
+  </select>
+  <input type="text" id="accNum" placeholder="Account Number">
+  <input type="text" id="accName" placeholder="Account Name">
+  <button onclick="requestWithdraw()">Submit</button>
+  <button onclick="showScreen('home')" class="nav-btn">Back to Home</button>
+</div>
+
+<script>
+const TASK_REWARD = 20;
+const MAX_TASKS = 20;
+const MIN_WITHDRAW = 10000;
+
+let user = JSON.parse(localStorage.getItem('bistroUser')) || {balance:0,tasks:0,loggedIn:false,phone:''};
+
+// Reset daily
+let lastReset = localStorage.getItem('lastReset');
+let today = new Date().toDateString();
+if(lastReset !== today){ user.tasks=0; localStorage.setItem('lastReset',today); save(); }
+
+function save(){localStorage.setItem('bistroUser',JSON.stringify(user))}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='home') updateHome();
+  if(id==='tasks') loadTasks();
+}
+
+function login(){
+  let phone = document.getElementById('phone').value;
+  if(phone===''){alert('Enter phone number');return}
+  user.loggedIn=true; user.phone=phone; save();
+  showScreen('home');
+}
+
+function signup(){ alert('Account created! Please login'); }
+
+function updateHome(){
+  document.getElementById('username').innerText = user.phone || 'User';
+  document.getElementById('balance').innerText = user.balance;
+  document.getElementById('taskCount').innerText = user.tasks;
+  document.getElementById('taskCount2').innerText = user.tasks;
+  document.getElementById('inviteLink').innerText = 'bistro.app/ref/' + user.phone;
+}
+
+function loadTasks(){
+  let list = document.getElementById('taskList');
+  list.innerHTML='';
+  document.getElementById('adContainer').style.display='none';
+  
+  if(user.tasks >= MAX_TASKS){
+    list.innerHTML = '<div class="card"><p>✅ All 20 tasks done. Come back tomorrow!</p></div>';
+    return;
+  }
+
+  for(let i=1;i<=MAX_TASKS;i++){
+    let status = user.tasks >= i ? 'Done' : 'Watch Ads';
+    let btnDisabled = user.tasks >= i ? 'disabled' : '';
+    list.innerHTML += `
+      <div class="task-card">
+        <span>Task ${i}</span>
+        <button ${btnDisabled} onclick="startAd(${i})">${status}</button>
+      </div>
+    `;
+  }
+}
+
+let currentTask = 0;
+function startAd(taskNum){
+  if(user.tasks >= MAX_TASKS) return;
+  currentTask = taskNum;
+  document.getElementById('adContainer').style.display='block';
+  document.getElementById('claimBtn').disabled = true;
+  
+  // LOAD YOUR ADSTERRA CODE HERE
+  document.getElementById('adsterraSlot').innerHTML = '<script src="https://pl30556019.effectivecpmnetwork.com/68/be/e5/68bee5d75277abf76b2436a45a10f4b0.js"><\/script>';
+  
+  // Unlock claim button after 10 seconds
+  setTimeout(()=>{
+    document.getElementById('claimBtn').disabled = false;
+  }, 10000);
+}
+
+function claimReward(){
+  user.tasks++;
+  user.balance += TASK_REWARD;
+  save();
+  updateHome();
+  alert(`+₦${TASK_REWARD} added! Task ${currentTask} completed`);
+  document.getElementById('adContainer').style.display='none';
+  loadTasks();
+}
+
+function requestWithdraw(){
+  let hour = new Date().getHours() + 1; // WAT = UTC+1
+  if(hour<6 || hour>=18){alert('Withdrawals only 6am - 6pm WAT');return}
+  if(user.balance < MIN_WITHDRAW){alert(`Minimum withdrawal is ₦${MIN_WITHDRAW}`);return}
+  let bank = document.getElementById('bank').value;
+  let acc = document.getElementById('accNum').value;
+  if(bank==='Select Bank' || acc===''){alert('Fill all details');return}
+  
+  alert(`Withdrawal request for ₦${user.balance} submitted!`);
+  user.balance = 0; save(); updateHome(); showScreen('home');
+}
+
+function copyInvite(){
+  navigator.clipboard.writeText(document.getElementById('inviteLink').innerText);
+  alert('Link copied!');
+}
+</script>
+</body>
+</html>
